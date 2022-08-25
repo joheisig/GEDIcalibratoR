@@ -4,21 +4,21 @@
 \alias{download_tiles}
 \title{Download selected LAZ, DEM, and DSM tiles}
 \usage{
-download_tiles(tiles, dir, what = "DSM", setTimeOut = NULL)
+download_tiles(tiles, dir, what = c("DEM", "DSM"), setTimeOut = NULL)
 }
 \arguments{
-\item{tiles}{table containing tiles to donload. output of \code{\link[=intersect_tiles2download]{intersect_tiles2download()}}
-or \code{\link[=select_tiles2download]{select_tiles2download()}}.}
+\item{tiles}{Table containing tiles to download. Output of \code{\link[=intersect_tiles2download]{intersect_tiles2download()}}
+or \code{\link[=select_tiles2download]{select_tiles2download()}}. Tiles are skipped if they already exist in \code{dir}.}
 
-\item{dir}{directory to download tiles to.}
+\item{dir}{Directory to download tiles to.}
 
-\item{what}{either "LAZ", "DEM", or "DSM" (default).}
+\item{what}{Either "LAZ", "DEM", or "DSM" (default).}
 
 \item{setTimeOut}{If e.g. laz files are large, download performance may suffer from the default
 timeout setting (60 sec). Adjust this in case you run into difficulties.}
 }
 \value{
-paths to downloaded files
+Paths to downloaded files.
 }
 \description{
 Download selected LAZ, DEM, and DSM tiles

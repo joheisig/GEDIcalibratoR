@@ -21,7 +21,6 @@ intersect_tiles2download = function(region = "all", gedi_obs = NULL, quiet = F){
   if (! region == "all") als = dplyr::filter(als, state == region)
   if (! sf::st_crs(gedi_obs) == sf::st_crs(als)) gedi_obs = sf::st_transform(gedi_obs, sf::st_crs(als))
 
-  #tiles = sf::st_intersection(als, gedi_obs) |> unique()
   tiles = als[gedi_obs,] |> unique()
   if (!quiet){
     message(paste(nrow(gedi_obs), "GEDI observations intersect the following", nrow(tiles),"tiles:"))
@@ -87,13 +86,13 @@ select_tiles2download = function(region = "all", gedi_obs = NULL, quiet = FALSE,
 #' Download selected LAZ, DEM, and DSM tiles
 #'
 #' @param tiles Table containing tiles to download. Output of [GEDIcalibratoR::intersect_tiles2download()]
-#' or [GEDIcalibratoR::select_tiles2download()].
+#' or [GEDIcalibratoR::select_tiles2download()]. Tiles are skipped if they already exist in `dir`.
 #' @param dir Directory to download tiles to.
 #' @param what Either "LAZ", "DEM", or "DSM" (default).
 #' @param setTimeOut If e.g. laz files are large, download performance may suffer from the default
 #' timeout setting (60 sec). Adjust this in case you run into difficulties.
 #'
-#' @return paths to downloaded files
+#' @return Paths to downloaded files.
 #' @export
 #'
 #' @examples
@@ -116,35 +115,38 @@ select_tiles2download = function(region = "all", gedi_obs = NULL, quiet = FALSE,
 #' # delete files
 #' unlink(c(dsm_tiles, dem_tiles, laz_tiles))
 #'}
-download_tiles = function(tiles, dir, what = "DSM", setTimeOut = NULL){
+download_tiles = function(tiles, dir, what = c("DEM","DSM"), setTimeOut = NULL){
   if (missing(tiles)) stop("First select ALS tiles using select_tiles2download() or intersect_tiles2download().")
-  if (! what %in%  c("LAZ","DEM","DSM")){
+  if (! any(what %in%  c("LAZ","DEM","DSM"))){
     stop(call. = F, "Invalid file type for Download. Choose from \n(1) LAZ - raw ALS point cloud,
          \n(2) DEM - digital elevation model, or \n(3) DSM - digital surface model.")
   }
   if (! dir.exists(dir)) stop("Directory does not exist!")
   if (! missing(setTimeOut)) options(timeout = setTimeOut)
-  tiles = select(tiles, ends_with(what))
-  names(tiles) = gsub(paste0(what,"|_"), "", names(tiles), ignore.case = T)
-  tiles = tiles[order(tiles$ftype),]
-  if (any(grepl("zip|gz", tiles$ftype))) tmp = tempfile()
 
-  pb = txtProgressBar(min = 0, max = nrow(tiles), initial = 0, style = 3)
   dlfiles = as.vector(NULL)
-  for (t in 1:nrow(tiles)) {
-    if (tiles[t,]$ftype %in% c("laz","tif")){
-      download_als_laz(tiles[t,], dir)
-    } else if (tiles[t,]$ftype == "gz") {
-      download_als_gz(tiles[t,], dir, tmp)
-    } else {
-      download_als_zip(tiles[t,], dir, tmp)
+  for (w in what) {
+    tiles_w = select(tiles, ends_with(w))
+    names(tiles_w) = gsub(paste0(w,"|_"), "", names(tiles_w), ignore.case = T)
+    tiles_w = tiles_w[order(tiles_w$ftype),]
+    if (any(grepl("zip|gz", tiles_w$ftype))) tmp = tempfile()
+
+    pb = txtProgressBar(min = 0, max = nrow(tiles_w), initial = 0, style = 3)
+    for (t in 1:nrow(tiles_w)) {
+      if (tiles_w[t,]$ftype %in% c("laz","tif")){
+        download_als_laz(tiles_w[t,], dir)
+      } else if (tiles_w[t,]$ftype == "gz") {
+        download_als_gz(tiles_w[t,], dir, tmp)
+      } else {
+        download_als_zip(tiles_w[t,], dir, tmp)
+      }
+      dlfiles = append(dlfiles, tiles_w[t,]$tile)
+      setTxtProgressBar(pb, t)
+      close(pb)
     }
-    dlfiles = append(dlfiles, tiles[t,]$tile)
-    setTxtProgressBar(pb, t)
-    close(pb)
   }
   message(crayon::yellow(paste("\n", paste(dlfiles, sep=" -- "))))
-  message(paste(length(dlfiles), "were successfully downloaded to", dir, "."))
+  message(paste(length(dlfiles), "tiles were successfully downloaded to", dir, "."))
   return(file.path(dir, dlfiles))
 }
 
