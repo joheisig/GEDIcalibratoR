@@ -21,7 +21,7 @@ make_rhm(
 
 \item{quiet}{If TRUE, hide message with tile names. Default is FALSE.}
 
-\item{...}{Further arguments to terra::aggregate(), e.g. fun = "max"}
+\item{...}{Further arguments passed to terra::aggregate(), e.g. fun = "max"}
 }
 \value{
 paths to RHM tiles
@@ -32,7 +32,8 @@ Digital Elevation Model (DEM) from the DSM.
 }
 \examples{
 \dontrun{
-data(gedi)
+library(sf)
+gedi = system.file("demodata/gedi.gpkg", package = "GEDIcalibratoR") |> st_read()
 tiles = intersect_tiles2download(gedi_obs = gedi)
 down_tiles = download_tiles(tiles, dir = tempdir())
 rhm_paths = make_rhm(tile_paths, overwrite_if_exists = T)

@@ -1,10 +1,10 @@
 Package: GEDIcalibratoR
-Title: What the Package Does (One Line, Title Case)
+Title: Location Calibration For GEDI Using ALS Reference Data
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    person("Johannes", "Heisig", , "jheisig@uni-muenster.de", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-3586-3001"))
+Description: GEDIcalibratoR facilitates location calibration for GEDI. It makes downloading tiles of ALS, DEM, and DEM data easy and evaluates possible spatial shifts using calibration grids. The best suitable shift can then be applied to the original data and may improve statistical models and following analyses.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -15,8 +15,16 @@ LazyData: true
 Imports: 
     crayon,
     dplyr,
+    ggplot2,
     leafpop,
     mapedit,
     mapview,
     R.utils,
-    sf
+    sf,
+    stats,
+    terra,
+    utils
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

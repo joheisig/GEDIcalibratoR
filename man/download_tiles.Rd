@@ -25,11 +25,13 @@ Download selected LAZ, DEM, and DSM tiles
 }
 \examples{
 \dontrun{
-data("gedi")
+library(sf)
+library(dplyr)
+
+gedi = system.file("demodata/gedi.gpkg", package = "GEDIcalibratoR") |> st_read()
 tiles = intersect_tiles2download(gedi_obs=gedi)
 
 # subset to keep one tile from each region
-library(dplyr)
 tiles = group_by(tiles, state) |> slice_head(n=1)
 
 # download to temporary directory

@@ -7,13 +7,18 @@
 shift_stats(ext_data, cal_var = "rh98")
 }
 \arguments{
-\item{ext_data}{Extracted reference values. Output of \code{\link[GEDIcalibrator:cal_extract]{GEDIcalibrator::cal_extract()}}.}
+\item{ext_data}{Extracted reference values. Output of \code{\link[=cal_extract]{cal_extract()}}.}
 
 \item{cal_var}{GEDI variable in ext_data to use for comparison.}
 }
 \value{
-Table with an entry for each file and shift summarizing calibratiion measures RMSE and R².
+Table with an entry for each file and shift summarizing calibration measures RMSE and R-squared.
 }
 \description{
 Calculate statistics for each calibration shift
+}
+\examples{
+grid_ext = system.file("demodata/grid_ext.rds", package = "GEDIcalibratoR") |> readRDS()
+shifts = shift_stats(grid_ext)
+plot_shift_stats(shifts)
 }

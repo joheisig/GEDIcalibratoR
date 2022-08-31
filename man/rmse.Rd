@@ -3,7 +3,7 @@
 \name{rmse}
 \alias{rmse}
 \alias{r2}
-\title{R² and RMSE helper functions}
+\title{R-squared and RMSE helper functions}
 \usage{
 rmse(a, p)
 
@@ -18,5 +18,5 @@ r2(a, p)
 numeric
 }
 \description{
-R² and RMSE helper functions
+R-squared and RMSE helper functions
 }

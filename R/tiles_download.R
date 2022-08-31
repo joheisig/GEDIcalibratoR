@@ -11,7 +11,11 @@
 #' digital elevation models, and digital surface models. Used as input to download_tiles().
 #' @export
 #' @seealso [GEDIcalibratoR::select_tiles2download()]
-#' @examples print("hi")
+#' @examples
+#' library(sf)
+#' gedi = system.file("demodata/gedi.gpkg", package = "GEDIcalibratoR") |> st_read()
+#' tiles = intersect_tiles2download(gedi_obs = gedi)
+#' head(tiles)
 intersect_tiles2download = function(region = "all", gedi_obs = NULL, quiet = F){
   if (! any(inherits(gedi_obs, c("sf", "sfc"))))
     stop("Please provide GEDI observations as georeferenced point dataset (sf/sfc object).", call. = F)
@@ -19,9 +23,17 @@ intersect_tiles2download = function(region = "all", gedi_obs = NULL, quiet = F){
   if (! region %in%  c("TH","NRW","SN", "all"))
     stop(call. = F,paste(region,"is not a valid region. Please select one of TH, NRW, SN or all."))
   if (! region == "all") als = dplyr::filter(als, state == region)
-  if (! sf::st_crs(gedi_obs) == sf::st_crs(als)) gedi_obs = sf::st_transform(gedi_obs, sf::st_crs(als))
+  if (! sf::st_crs(gedi_obs) == sf::st_crs(als)) als = sf::st_transform(als, sf::st_crs(gedi_obs))
 
   tiles = als[gedi_obs,] |> unique()
+
+  count_obs = sf::st_intersection(als, sf::st_geometry(gedi_obs)) |>
+    sf::st_drop_geometry() |>
+    dplyr::group_by(tile_laz) |>
+    dplyr::summarise(n_obs = dplyr::n())
+
+  tiles = dplyr::inner_join(tiles, count_obs, by = "tile_laz")
+
   if (!quiet){
     message(paste(nrow(gedi_obs), "GEDI observations intersect the following", nrow(tiles),"tiles:"))
     message(crayon::yellow(paste(tiles$tile_laz, collapse = "\n")))
@@ -45,8 +57,10 @@ intersect_tiles2download = function(region = "all", gedi_obs = NULL, quiet = F){
 #' @seealso [GEDIcalibratoR::intersect_tiles2download()]
 #' @examples
 #' \dontrun{
-#' tiles = select_tiles2download("SN")
-#' # manually select tiles of interest in the view pane
+#' library(sf)
+#' gedi = system.file("demodata/gedi.gpkg", package = "GEDIcalibratoR") |> st_read()
+#' tiles = select_tiles2download(gedi_obs = gedi)
+#' head(tiles)
 #' }
 select_tiles2download = function(region = "all", gedi_obs = NULL, quiet = FALSE, mode = "click"){
   if (!missing(gedi_obs) & !any(inherits(gedi_obs, c("sf", "sfc"))))
@@ -70,8 +84,12 @@ select_tiles2download = function(region = "all", gedi_obs = NULL, quiet = FALSE,
     mapview::mapview(overview_layers[[3]], zcol="year_dsm", hide = T, legend = T,layer.name = "DSM Year",
                      popup = leafpop::popupTable(overview_layers[[3]], zcol = c(1,2), feature.id = F))
 
-  if (! missing(gedi_obs)) basemap = basemap + mapview::mapview(gedi_obs, col.regions = "orange",
-                                                                layer.name = "GEDI", popup=F)
+  if (! missing(gedi_obs)){
+    gedi_obs = dplyr::group_by(gedi_obs, file, beam) |>
+      dplyr::summarise() |> sf::st_cast("LINESTRING")
+    basemap = basemap + mapview::mapview(gedi_obs, color = "orange",
+                                         layer.name = "GEDI", popup=F)
+  }
   files = mapedit::selectFeatures(als, alpha = 0.2, color="white",
                                   title="Select ALS tiles for download",
                                   label = als$tile_laz, map = basemap, mode)
@@ -97,11 +115,13 @@ select_tiles2download = function(region = "all", gedi_obs = NULL, quiet = FALSE,
 #'
 #' @examples
 #' \dontrun{
-#' data("gedi")
+#' library(sf)
+#' library(dplyr)
+#'
+#' gedi = system.file("demodata/gedi.gpkg", package = "GEDIcalibratoR") |> st_read()
 #' tiles = intersect_tiles2download(gedi_obs=gedi)
 #'
 #' # subset to keep one tile from each region
-#' library(dplyr)
 #' tiles = group_by(tiles, state) |> slice_head(n=1)
 #'
 #' # download to temporary directory
@@ -126,7 +146,7 @@ download_tiles = function(tiles, dir, what = c("DEM","DSM"), setTimeOut = NULL){
 
   dlfiles = as.vector(NULL)
   for (w in what) {
-    tiles_w = select(tiles, ends_with(w))
+    tiles_w = dplyr::select(tiles, dplyr::ends_with(w))
     names(tiles_w) = gsub(paste0(w,"|_"), "", names(tiles_w), ignore.case = T)
     tiles_w = tiles_w[order(tiles_w$ftype),]
     if (any(grepl("zip|gz", tiles_w$ftype))) tmp = tempfile()

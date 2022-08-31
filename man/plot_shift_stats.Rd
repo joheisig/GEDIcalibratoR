@@ -2,13 +2,18 @@
 % Please edit documentation in R/location_calibration.R
 \name{plot_shift_stats}
 \alias{plot_shift_stats}
-\title{Title}
+\title{Comparative scatter plot of calibration shifts}
 \usage{
 plot_shift_stats(shifts)
 }
 \arguments{
-\item{shifts}{}
+\item{shifts}{Output of \code{\link[=shift_stats]{shift_stats()}}}
 }
 \description{
-Title
+Comparative scatter plot of calibration shifts
+}
+\examples{
+grid_ext = system.file("demodata/grid_ext.rds", package = "GEDIcalibratoR") |> readRDS()
+shifts = shift_stats(grid_ext)
+plot_shift_stats(shifts)
 }

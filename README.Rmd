@@ -1,0 +1,37 @@
+
+# GEDIcalibratoR
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of GEDIcalibratoR is to facilitate location calibration for GEDI. It makes downloading tiles of ALS, DEM, and DEM data easy and evaluates possible spatial shifts using user-defined calibration grids. The best suitable shift can then be applied to the original data and may improve statistical models and following analyses. GEDIcalibratoR also provides functions to visualize calibration effects.
+
+## Installation
+
+You can install the development version of GEDIcalibratoR from [GitHub](https://github.com/) with:
+
+```{r}
+devtools::install_github("joheisig/GEDIcalibratoR")
+```
+
+## Development Goals
+
+The package is currently usable. GEDI data can be calibrated using digital surface and elevation models. More functionality shall be added in the future, e.g.:
+
+- support of more complex calibration variables derived from ALS point clouds
+- more criteria to select the best shift (besides RMSE)
+- more and more flexible plotting options
+
+## Example 
+
+```{r}
+library(GEDIcalibratoR)
+grid_ext = system.file("demodata/grid_ext.rds", package = "GEDIcalibratoR") |> readRDS()
+shifts = shift_stats(grid_ext)
+plot_shift_stats(shifts)
+
+bs = get_best_shift(grid_ext, shifts)
+ns = get_no_shift(grid_ext, shifts)
+plot_calibration(bs, ns, label = c("Best","Ref"), color = c("forestgreen", "firebrick"))
+```
+

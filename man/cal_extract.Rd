@@ -7,7 +7,7 @@
 cal_extract(tile_paths, gedi_grid, buffer = 12.5, fun = "max", quiet = F)
 }
 \arguments{
-\item{tile_paths}{Paths to DSM, DEM or preprocessed RHM tiles.
+\item{tile_paths}{Paths to DSM, DEM or pre-processed RHM tiles.
 Output of \code{\link[=download_tiles]{download_tiles()}} or \code{\link[=make_rhm]{make_rhm()}}.}
 
 \item{gedi_grid}{Calibration grid. Output of \code{\link[=cal_grid_rect]{cal_grid_rect()}} or \code{\link[=cal_grid_circle]{cal_grid_circle()}}.}
@@ -26,11 +26,14 @@ Extract reference raster values for a calibration grid
 }
 \examples{
 \dontrun{
-data(gedi)
-gedi_circ = cal_grid_circle(gedi)
-tiles = intersect_tiles2download(gedi_obs = gedi_circ)
+library(sf)
+gedi = system.file("demodata/gedi.gpkg", package = "GEDIcalibratoR") |> st_read()
+
+tiles = intersect_tiles2download(gedi_obs = gedi)
 down_tiles = download_tiles(tiles, dir = tempdir())
 rhm_paths = make_rhm(tile_paths, overwrite_if_exists = T)
+
+gedi_circ = cal_grid_circle(gedi)
 
 grid_ext = cal_extract(rhm_paths, gedi_circ, buffer = 12.5)
 summary(grid_ext)

@@ -30,8 +30,10 @@ Currently supports open LiDAR archives from three German states: Northrhine-West
 }
 \examples{
 \dontrun{
-tiles = select_tiles2download("SN")
-# manually select tiles of interest in the view pane
+library(sf)
+gedi = system.file("demodata/gedi.gpkg", package = "GEDIcalibratoR") |> st_read()
+tiles = select_tiles2download(gedi_obs = gedi)
+head(tiles)
 }
 }
 \seealso{

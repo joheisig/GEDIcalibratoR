@@ -22,7 +22,10 @@ Non-interactive version of \code{select_tiles2download()}. Takes an input of poi
 Currently supports open LiDAR archives from three German states: Northrhine-Westfalia (NRW), Thuringia (TH), and Saxony (SN).
 }
 \examples{
-print("hi")
+library(sf)
+gedi = system.file("demodata/gedi.gpkg", package = "GEDIcalibratoR") |> st_read()
+tiles = intersect_tiles2download(gedi_obs = gedi)
+head(tiles)
 }
 \seealso{
 \code{\link[=select_tiles2download]{select_tiles2download()}}
