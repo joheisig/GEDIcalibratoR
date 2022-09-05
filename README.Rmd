@@ -10,7 +10,7 @@ The goal of GEDIcalibratoR is to facilitate location calibration for GEDI. It ma
 
 You can install the development version of GEDIcalibratoR from [GitHub](https://github.com/) with:
 
-```{r}
+```{r, eval=FALSE}
 devtools::install_github("joheisig/GEDIcalibratoR")
 ```
 
@@ -26,8 +26,10 @@ The package is currently usable. GEDI data can be calibrated using digital surfa
 
 ```{r}
 library(GEDIcalibratoR)
+library(sf)
 grid_ext = system.file("demodata/grid_ext.rds", package = "GEDIcalibratoR") |> readRDS()
 shifts = shift_stats(grid_ext)
+head(shifts)
 plot_shift_stats(shifts)
 
 bs = get_best_shift(grid_ext, shifts)
