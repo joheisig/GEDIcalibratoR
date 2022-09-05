@@ -2,6 +2,7 @@
 "_PACKAGE"
 
 ## usethis namespace: start
+#' @importFrom grDevices rainbow
 #' @importFrom stats cor
 #' @importFrom stats sd
 #' @importFrom stats setNames

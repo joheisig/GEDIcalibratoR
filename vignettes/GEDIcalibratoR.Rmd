@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 The package should install without errors or warnings. Three NOTEs are known of:
 
-1. from installed package size of 23.8Mb 
+1. from installed package size of 114.7Mb 
 2. from non-standard file 'README.Rmd' - here demo data is stored to speed up examples and the vignette.
 3. from detected possible problems related to non-visible bindings for global variables
 
@@ -39,11 +39,11 @@ The `GEDIcalibratoR` package provides functionality to
 
 ## Limitations
 
-Currently `GEDIcalibratoR` only provides reference data downloads from public ALS data archives of three German states, namely Northrhine-Westphalia, Thuringia, and Saxony. This approach follows the assumption, that GEDI's location error applies an entire orbit, as it originates from a constant spatial shift of the flight path. 
+Currently `GEDIcalibratoR` only provides reference data downloads from public ALS data archives of three German states, namely Northrhine-Westphalia, Thuringia, and Saxony. This approach follows the assumption, that GEDI's location error applies to an entire orbit, as it originates from a constant spatial shift of the flight path. Algorithms used in this packages aim at moving observations closer to their true location using a grid of possible options. They may not find the exact true location with this approach. 
 
 ## GEDI Data
 
-GEDI data can be acquired from [NASA EarthData](https://search.earthdata.nasa.gov/search?q=C1908348134-LPDAAC_ECS) or through platforms such aas Google Earth Engine. To use it within `R` and `GEDIcalibratoR` it should be stored as and imported from a geo-referenced vector file (e.g. `.gpgk` or `.shp`) and have a projected coordinate reference system. In this demo, `gedi` is read using `sf`. It stores two GEDI orbits containing relative height measurements (`rh1-rh99`), the source file name (`file`), and an `ìd` column enumerating observations per file.
+GEDI data can be acquired from [NASA EarthData](https://search.earthdata.nasa.gov/search?q=C1908348134-LPDAAC_ECS) or through platforms such as Google Earth Engine. To use it within `R` and `GEDIcalibratoR` it should be stored as and imported from a geo-referenced vector file (e.g. `.gpgk` or `.shp`) and have a projected coordinate reference system. In this demo, `gedi` is read using `sf`. It stores two GEDI orbits containing relative height measurements (`rh1-rh99`), the source file name (`file`), and an `ìd` column enumerating observations per file.
 
 ```{r}
 library(GEDIcalibratoR)
@@ -58,7 +58,7 @@ table(gedi$file)
 
 ## Retrieving ALS reference tiles
 
-We intersect GEDI points with ALS tile grids to identify suitable tiles for download. `intersect_tiles2download()` adds a column `n_obs` that contains the number of intersecting points per tile. This is helpful for prioritizing and to keep download volume small. In this example we will only use the three most intersected tiles for each German state instead of a total of 881 tiles. Download tiles may also be filtered by defining argument `region` or by filtering `tiles` by year of acquisition.
+We intersect GEDI points with ALS tile grids to identify suitable tiles for download. `intersect_tiles2download()` adds a column `n_obs` that contains the number of intersecting GEDI observations per tile. This is helpful for prioritizing and to keep download volume small. In this example we will only use the three most intersected tiles for each German state instead of a total of 881 tiles. Download tiles may also be filtered by defining argument `region` or by filtering `tiles` by year of acquisition.
 
 ```{r intersect}
 tiles = intersect_tiles2download(gedi_obs = gedi, quiet = T)
@@ -174,7 +174,7 @@ By combining two shift options in one pane the third scatter plot shows the effe
 
 The output of `get_best_shift()` can be re-joined with the original GEDI measurement data and used in downstream analysis.
 
-```{r, cache=TRUE}
+```{r mapview}
 #| fig.width=7,
 #| out.width = "100%"
 GEDI_calibrated = apply_shift(gedi, best_shift)
@@ -186,13 +186,13 @@ mapview(tiles, alpha.regions = 0, color="blue") +
   mapview(GEDI_calibrated, col.regions = color[1], alpha = 1) 
 ```
 
-Zoom into this map to find the selected ALS tile footprints, the circular calibration grid, the calibrated GEDI locations and the original ones (hidden by default).
+Zoom into this map to find the selected ALS tile footprints, the circular calibration grids and the calibrated GEDI locations.
 
 ## Discussion
 
-GEDI data, being acquired by a space-borne instrument, comes with a trade-off. On the one side it measures vegetation structure with a near-global coverage, delivering consistent data in areas without accessible ALS data. In turn it prone larger (height) measurement errors compared to ALS. This demo shows how GEDI data may be calibrated by reducing its location error. 
+GEDI data, being acquired by a space-borne instrument, comes with a trade-off. On the one side it measures vegetation structure with a near-global coverage, delivering consistent data in areas without accessible ALS data. In turn it is prone to larger (height) measurement errors compared to ALS. This demo showed how GEDI data may be calibrated by reducing its location error. 
 
-The analysis found different optimal locations for the two example GEDI orbits. Their RMSE when compared to an ALS reference could be reduced by 0.58 (~19 %) and 0.47 (~9 %) meters, respectively. That is a significant improvement of the original data and will likely have a positive effect on further statistical models. It should be noted, however, that this result only considered few ALS reference tile and may vary when including more data. Further, this analysis used pre-filtered GEDI observations (day of year, time of day, quality flag) to receive the most promising and sensitive measurements. Including all available observations may impact the calibration effect.
+The analysis found different optimal locations for the two example GEDI orbits. Their RMSE when compared to an ALS reference could be reduced by 0.58 (~19 %) and 0.47 (~9 %) meters, respectively. That is a significant improvement of the original data and will likely have a positive effect on further statistical models. It should be noted, however, that this result only considered few ALS reference tiles and may vary when including more data. Further, this analysis used pre-filtered GEDI observations (day of year, time of day, quality flag) to receive the most promising and sensitive measurements. Including all available observations may impact the calibration effect.
 Future efforts should investigate the effect of this pre-processing method on GEDI-based estimates of above-ground carbon stock or forest structure.
 
 ## References
