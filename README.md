@@ -2,8 +2,8 @@
 # GEDIcalibratoR
 
 The goal of GEDIcalibratoR is to facilitate location calibration for
-GEDI. It makes downloading tiles of ALS, DEM, and DEM data easy and
-evaluates possible spatial shifts using user-defined calibration grids.
+GEDI. It makes downloading tiles of ALS, DEM, and DSM data easy and
+evaluates possible spatial shifts on user-defined calibration grids.
 The best suitable shift can then be applied to the original data and may
 improve statistical models and following analyses. GEDIcalibratoR also
 provides functions to visualize calibration effects.
