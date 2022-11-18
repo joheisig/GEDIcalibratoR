@@ -215,10 +215,11 @@ cal_extract = function(tile_paths, gedi_grid, buffer = 12.5, fun = 'max', quiet 
   nrw = merge_tiles(grep("_nw", tile_paths, value = T), "EPSG:25832")
   th = merge_tiles(grep("_th_", tile_paths, value = T), "EPSG:25832")
   sn = merge_tiles(grep("_sn", tile_paths, value = T), "EPSG:25833")
+  bb = merge_tiles(grep("_bb", tile_paths, value = T), "EPSG:25833")
 
   # extract
   if (!quiet) message("Extracting...")
-  gedi32 = gedi33 = enrw = eth = esn = NULL
+  gedi32 = gedi33 = enrw = eth = esn = ebb = NULL
   if (any(!is.null(nrw), !is.null(th))){
     gedi32 = sf::st_transform(gedi_grid, sf::st_crs(25832)) |> sf::st_buffer(buffer)
     if (!is.null(nrw)){
@@ -230,13 +231,19 @@ cal_extract = function(tile_paths, gedi_grid, buffer = 12.5, fun = 'max', quiet 
       eth[is.nan(eth)] = NA
     }
   }
-  if (!is.null(sn)){
+  if (any(!is.null(sn), !is.null(bb))){
     gedi33 = sf::st_transform(gedi_grid, sf::st_crs(25833)) |> sf::st_buffer(buffer)
-    esn = terra::extract(sn, terra::vect(gedi33), fun = fun, ID = F)[,1] |> as.vector()
-    esn[is.nan(esn)] = NA
+    if (!is.null(sn)){
+      esn = terra::extract(sn, terra::vect(gedi33), fun = fun, ID = F)[,1] |> as.vector()
+      esn[is.nan(esn)] = NA
+    }
+    if (!is.null(bb)){
+      ebb = terra::extract(bb, terra::vect(gedi33), fun = fun, ID = F)[,1] |> as.vector()
+      ebb[is.nan(ebb)] = NA
+    }
   }
   # merge
-  gedi_grid$ext_value = rowSums(cbind(enrw, eth, esn), na.rm = T)
+  gedi_grid$ext_value = rowSums(cbind(enrw, eth, esn, ebb), na.rm = T)
   gedi_grid = dplyr::select(gedi_grid, dplyr::everything(), dplyr::starts_with("geom"))
   attr(gedi_grid, "grid_type") = gtype
   if (!quiet) message("Complete!")
